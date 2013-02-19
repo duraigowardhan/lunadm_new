@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+
+# lunadm
+#
+############################################################################
+#    Copyright (C) NetApp Inc
+#    Author: Ritesh Raj Sarraf <rsarraf@netapp.com>
+#
+#		License: TBD
+############################################################################
+
+
+from lunadm_core import main
+
+if __name__ == "__main__":
+    main()
