@@ -416,8 +416,10 @@ def main():
         
         global_options.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
         
-	global_options.add_argument("-t", "--target", dest="target", help="Target Name/IP",
-                      action="store", type=str, metavar="Target Name/Address")
+	#global_options.add_argument("target",  help="Target Name/IP",
+     #                 action="store", type=str, metavar="-t <Target Name/Address>")
+    #global_options.add_argument("-t","--target", dest="target",  help="Target Name/IP",
+     #                           action="store", type=str, metavar="-t <Target Name/Address>")
         
 	global_options.add_argument("-c", "--command", dest="command",
                       help="Execute command on the target", action="store", metavar="Target Command")
@@ -426,31 +428,76 @@ def main():
                                           description="LUN Administration Utility",
                                           epilog=copyright + " - " + terminal_license, parents=[global_options])
         parser.add_argument("-v", "--version", action='version', version=version)
+        parser.add_argument("target", help="target name/IP", action="store", type=str,
+                            metavar="-t <target name/IP>")
         
-        subparsers = parser.add_subparsers()
+        subparsers = parser.add_subparsers(help='sub-command help')
         
-        parser_add = subparsers.add_parser('add', parents=[global_options])
-        parser_add.add_argument('add',
-                          help="Add LUNs on the Storage Controller and the Initiator host",
-                          action="store", type=str, nargs='*', metavar="LUN_N")
-        parser_add.add_argument("--type", dest="lun_type", help="Type of LUN to add", action="store",
-                                type=str, metavar="LUN Type")
-        parser_add.add_argument("--size", dest="lun_size", help="Size of LUN", action="store",
-                                type=str, metavar="LUN Size")
-        parser_add.add_argument("--igroup", dest="add_igroup", help="igroup to associate with", action="store",
-                                type=str, metavar="igroup")
+        parser_lun = subparsers.add_parser('lun', help='lun help', parents=[global_options])
+        parser_lun_subparser = parser_lun.add_subparsers(help='sub-command help')
         
-        parser_del = subparsers.add_parser('del', parents=[global_options])
-        parser_del.add_argument('del',
-                          help="Delete LUNs from the Storage Controller and the Initiator host",
-                          action="store", type=str, nargs='*', metavar="LUN_N")
+        parser_lun_show = parser_lun_subparser.add_parser('show', parents=[global_options], help='show help')
+        parser_lun_show.add_argument("--type", dest="lun_type", help="Type of LUN to add", action="store",
+                                     type=str, metavar="all|mapped|unmapped|online|offline|staging|-g <initiator_group>|-n <node> |-l <vol_name>|<lun_path>")
+    
+                                     
+        parser_lun_create = parser_lun_subparser.add_parser('create', parents=[global_options])
+        parser_lun_create.add_argument("size", help="size of lun", action="store",
+                                       type=int, metavar="-s <size>")
+        parser_lun_create.add_argument("ostype", help="os type [solaris|vld|windows|hpux|aix|linux|netware|vmware|windows_gpt|windows_2008|openvms|xen|hyper_v|solaris_efi]", action="store",
+                                       type=str, metavar="--ostype <ostype>")
+        parser_lun_create.add_argument("lunpath",  help="full path of lun", action="store",
+                                       type=str, metavar="--lunpath <lunpath>")
+
+
+        parser_lun_destroy = parser_lun_subparser.add_parser('destroy', parents=[global_options])
+        parser_lun_destroy.add_argument("--lun_path", dest="lun_path", help="absolute path of lun", action="store",
+                                       type=str, metavar="absolute path of lun")
+                                       
+        parser_lun_clone = parser_lun_subparser.add_parser('clone create', parents=[global_options])
+        parser_lun_clone.add_argument("clone_lunpath", help="absolute path of new clone lun", action="store",
+                                        type=str, metavar="--clone_lunpath <lunpath>")
+        parser_lun_clone.add_argument("parent_lunpath", help="absolute path of parent lun", action="store",
+                                      type=str, metavar="--parent_lunpath <lunpath>")
+        parser_lun_clone.add_argument("parent_snap", help="parent lun snap", action="store",
+                                      type=str, metavar="--parent_snap <snap>")
+        parser_lun_resize = parser_lun_subparser.add_parser('resize', parents=[global_options])
+        parser_lun_clone.add_argument("size", help="size of the lun", action="store",
+                                      type=str, metavar="[+ | -] <size>")
+        parser_lun_clone.add_argument("lun_path", help="absolute path of the lun", action="store",
+                                      type=str, metavar="--lunpath <lunpath>")
+        parser_lun_snap = parser_lun_subparser.add_parser('snap', parents=[global_options])
+        
+        parser_igroup = subparsers.add_parser('igroup', parents=[global_options])
+        parser_igroup_subparser = parser_igroup.add_subparsers()
+        parser_igroup_show = parser_igroup_subparser.add_parser('show', parents=[global_options])
+        parser_igroup_create = parser_igroup_subparser.add_parser('create', parents=[global_options])
+        parser_igroup_destroy = parser_igroup_subparser.add_parser('destroy', parents=[global_options])
+        
+        
+        
+        #parser_add = subparsers.add_parser('add', parents=[global_options])
+        #parser_add.add_argument('add',
+         #                 help="Add LUNs on the Storage Controller and the Initiator host",
+         #                 action="store", type=str, nargs='*', metavar="LUN_N")
+        #parser_add.add_argument("--type", dest="lun_type", help="Type of LUN to add", action="store",
+         #                       type=str, metavar="LUN Type")
+        #parser_add.add_argument("--size", dest="lun_size", help="Size of LUN", action="store",
+         #                       type=str, metavar="LUN Size")
+        #parser_add.add_argument("--igroup", dest="add_igroup", help="igroup to associate with", action="store",
+         #                       type=str, metavar="igroup")
+        
+        #parser_del = subparsers.add_parser('del', parents=[global_options])
+       # parser_del.add_argument('del',
+        #                  help="Delete LUNs from the Storage Controller and the Initiator host",
+         #                 action="store", type=str, nargs='*', metavar="LUN_N")
         
         parser_show = subparsers.add_parser('show', parents=[global_options])
         parser_show.add_argument('show',
                           help="Show LUNs mapped on the running host",
                           action="store_true")
         parser_show.add_argument("--type", dest="lun_type", help="Type of LUN to show",
-                                 action="store", type=str)
+                                 action="store", type=str, metavar="all|mapped|offline|online|unmapped|staging")
         parser_show.add_argument("--igroups", dest="igroup_show", help="Show igroup information",
                                  action="store", type=str)
         parser_show.add_argument("--mapped", dest="mapped_lun", help="Display mapped LUN",
@@ -463,15 +510,17 @@ def main():
                                  action="store_false")
         parser_show.add_argument("--staging", dest="staging_lun", help="Display staging LUN",
                                  action="store_false")
-        
 	
-        parser_space_reclaim = subparsers.add_parser('space-reclaim', parents=[global_options])
-        parser_space_reclaim.add_argument('space-reclaim',
-                          help="Reclaim/Free unutilized space on a Thin Provisioned LUN",
-                          action="store", type=str, nargs='*', metavar="LUN_N")
+        #parser_space_reclaim = subparsers.add_parser('space-reclaim', parents=[global_options])
+        #parser_space_reclaim.add_argument('space-reclaim',
+         #                 help="Reclaim/Free unutilized space on a Thin Provisioned LUN",
+          #                action="store", type=str, nargs='*', metavar="LUN_N")
         
         
         args = parser.parse_args()
+        print args.lunpath
+        print args.size
+        print args.ostype
 	#(options, args) = parser.parse_args()
 	
 	try:
@@ -493,22 +542,22 @@ def main():
 			log.verbose("Command is: %s\n" % (cmd) )
 			
 			#connection = connectTarget(options.target, 'TELNET', None,  "lun show " + options.lun_show)
-			connection = connectTarget(target, 'SSH', None,  "lun " + cmd)
+		#	connection = connectTarget(target, 'SSH', None,  "lun " + cmd)
 			#print connection.connectNtapTargetRSH()
-			connection.connect()
+		#	connection.connect()
 			#connection.execCmd()
 			#if not connection.execCmd("lun " + cmd):
                         #        print "Failed"
 			#log.verbose("Closing connection: %s\n" % (connection.closeConn() ) )
                         
-                        (stdin, stdout, stderr) = connection.execCmd("lun " + cmd)
+         #               (stdin, stdout, stderr) = connection.execCmd("lun " + cmd)
                         #print stdout.read()
-                        for eachline in stdout.readlines():
-				try:
-                                	eachline.lstrip(eachline.whitespace())
-				except:
-					pass
-                                print eachline
+          #              for eachline in stdout.readlines():
+			#	try:
+             #                   	eachline.lstrip(eachline.whitespace())
+		#		except:
+		#			pass
+         #                       print eachline
 			#print connection.connectNtapTargetTelnet()
 	except KeyboardInterrupt:
 		sys.stderr.write("Exiting on user request.\n")
